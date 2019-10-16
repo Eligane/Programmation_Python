@@ -1,0 +1,29 @@
+class Humain:
+    # Cette classe représente un humain
+    def __init__(self, name, level):
+        print("Création d'un humain")
+        self.name = name
+        self._level = level  # On encapsule l'attribut  _ = encapsulé, l'attribut = level
+
+    def _get_level(self):
+        if self._level <= 1:
+            return "{} {}".format(self._level, "an")
+        else:
+            return "{} {}".format(self._level, "ans")
+
+    def _set_level(self, new_level):
+        if new_level < 0 :
+            self._level = 0
+        else:
+            self._level = new_level
+
+    def _delage(self):
+        del self._level
+
+    level = property(_get_level, _set_level, "Je suis le level d'un humain") # Propriété ('getter','setter','deleter','helper', none)
+
+# Programme principal
+
+h1 = Humain("Jason", int(input("ENTREZ VOTRE LVL")))
+
+print("{} a {}".format(h1.name, h1.level))
