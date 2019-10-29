@@ -1,0 +1,483 @@
+#### CODE ##############################################################################################################
+from random import *
+from tkinter import *
+########################################################################################################################
+class Weapon:
+    def __init__(self, name, damage, enchantment, durability):
+        self.name = name
+        self.damage = damage
+        self.enchantment = enchantment
+        self.durability = durability
+
+    def get_name(self):
+        return self.name
+
+    def get_damage_amount(self):
+        return self.damage
+
+    def get_enchantment(self):
+        return self.enchantment
+
+    def get_durability(self):
+        return self.durability
+
+    def lower_durability(self):
+        self.durability -= 1
+        return self.durability
+
+
+class Entity:
+    def __init__(self, name="None", health=10, attack=1, dext=1, mana_point=0, target_entity="None", loot="None"):
+        self.name = name
+        self.health = health
+        self.attack = attack
+        self.dext = dext
+        self.mana_point = mana_point
+        self.target_entity = target_entity
+        self.loot = loot
+        self.item1 = None
+        self.item2 = None
+        self.item3 = None
+        self.item4 = None
+        self.item5 = None
+        self.weapon = None
+        print("------------------------------------------------------"
+              "\n{}: Vie {}, Dext {}, Attack {}, Mana Point {}".format(self.name, self.health,
+                                                                       self.dext, self.attack,
+                                                                       self.mana_point))
+    def maximum_health(self):
+        if self.health > 10:
+            self.health = 10
+
+    def get_health_amount(self):
+        return self.health
+
+    def set_items(self, item1, item2, item3, item4, item5):
+        self.item1 = item1
+        self.item2 = item2
+        self.item3 = item3
+        self.item4 = item4
+        self.item5 = item5
+
+    def new_item(self, new_item):
+        self.item5 = new_item
+
+    def use_item_and_spells(self, item):
+        if item == "Potion de Soin" and self.item1 == "Potion de Soin":
+            self.health += 5
+
+            if self.health > 10:
+                self.health = 10
+            print("{} utilise {}, il lui reste {} PV".format(self.name, self.item1, self.health))
+            self.item1 = None
+
+        if item == "Boule de Feu" and self.item2 == "Boule de Feu" and self.mana_point >= 5:
+            self.mana_point -= 5
+            print("~ Vous utilisez 5 points de Mana")
+            set_var_mana_point_hero_1()
+            if monster_1.health > 0:
+                monster_1.damage(3)
+                if monster_1.weakness == "Fire":
+                    print("***", monster_1.name, ": Faiblesse : 'Fire', perd 1 point de vie supplémentaire !")
+                    monster_1.damage(1)
+            if monster_2.health > 0:
+                monster_2.damage(3)
+                if monster_2.weakness == "Fire":
+                    print("***", monster_2.name, ": Faiblesse : 'Fire', perd 1 point de vie supplémentaire !")
+                    monster_2.damage(1)
+            if monster_3.health > 0:
+                monster_3.damage(3)
+                if monster_3.weakness == "Fire":
+                    print("***", monster_3.name, ": Faiblesse : 'Fire', perd 1 point de vie supplémentaire !")
+                    monster_3.damage(1)
+            print("{} utilise {}, qui explose en infligeant 3 points de dégâts à tout les adversaires"
+                  "\nIl reste {} PV au {}, {} PV au {}, et {} PV au {}".format(self.name, self.item2,
+                                                                               monster_1.health, monster_1.name
+                                                                               , monster_2.health, monster_2.name,
+                                                                               monster_3.health, monster_3.name))
+        if item == "Bombe Fumigène" and self.item3 == "Bombe Fumigène":
+            print("{} utilise {}, il rend aveugle les enemis pendant 1 tour !".format(self.name, self.item3))
+            monster_1.dext -= 1
+            monster_3.dext -= 1
+            monster_2.dext -= 1
+            self.item3 = None
+            print("Dextérité {}, {}, {}, {}, {}, {}".format(monster_1.name,monster_1.dext,monster_2.name, monster_2.dext, monster_3.name,
+                                                            monster_3.dext))
+
+        if item == "Resistance Magique" and self.item4 == "Resistance Magique" and self.mana_point >= 2:
+            print("Résistance Magique enclenchée".format(self.name, self.item4))
+            self.mana_point -= 2
+            set_var_mana_point_hero_1()
+            print("~ Vous utilisez 2 points de Mana")
+
+        if item == "Potion de Mana" and self.item5 == "Potion de Mana":
+            print("Vous buvez une Potion de Mana et regagnez 5 point de Mana ")
+            self.mana_point += 5
+            set_var_mana_point_hero_1()
+
+    def damage(self, damage):
+        var_dext = randint(0, self.dext)
+        if var_dext >= 1 and damage == 1:
+            damage -= 1
+            print("/ {} à esquivé {} point de dégât !".format(self.name, 1))
+        if var_dext >= 1 and damage > 1:
+            damage -= self.dext
+            print("/ {} à esquivé {} points de dégâts !".format(self.name, self.dext))
+        if self.health > 0:
+            self.health -= damage
+        if self.health <= 0:
+            print("\n{} est mort !".format(self.name))
+            hero_1.mana_point += 2
+            set_var_mana_point_hero_1()
+        if monster_1.health <= 0:
+            print("Vous trouvez {} sur le {}".format(monster_1.item1, monster_1.name))
+            hero_1.new_item(monster_1.item1)
+            packitem5()
+        if monster_1.health <= 0 and monster_2.health <= 0 and monster_3.health <= 0:
+            print("Tout les Monstres sont morts ! Vous passez au prochain niveau !")
+
+    def attack_entity(self, target):
+        damage = self.attack
+        if self.has_weapon() and self.weapon.get_durability() > 0:
+            # ajoute les dégats de l'arme au point d'attaque du joueur
+            damage += self.weapon.get_damage_amount()
+            self.weapon.lower_durability()
+            print("\n-----------------------Nouveau Tour---------------------------\n"
+                  "Votre arme perd 1 en durabilité, nouvelle durabilité = ",self.weapon.get_durability())
+            set_var_attack()
+        else:
+            print("\n-----------------------Nouveau Tour---------------------------\n"
+                  "Vous attaquez à mains nues !")
+        if Weapon.get_enchantment(weapon) == "Fire":
+            var_enchanted = randint(0, 1)
+            self.mana_point -= 1
+            set_var_mana_point_hero_1()
+            if self.mana_point < 0:
+                self.mana_point = 0
+                set_var_mana_point_hero_1()
+            if var_enchanted == 1 and self.mana_point >= 1:
+                print("** {} est enflammé, il perd 1 point de dégât supplémentaire".format(target.name))
+                target.damage(1)
+                set_var_life_monster_1()
+                set_var_life_monster_2()
+                set_var_life_monster_3()
+
+                if target.weakness == "Fire":
+                    target.damage(1)
+                    print("***", target.name, ": Faiblesse : 'Fire', perd 1 point de vie supplémentaire !")
+                    set_var_life_monster_1()
+                    set_var_life_monster_2()
+                    set_var_life_monster_3()
+
+            if var_enchanted == 0 and self.mana_point >= 1:
+                print("** L'enchantement à échoué...")
+
+        if target.health > 0 and self.health > 0:
+            target.damage(damage)
+            print("--> {} attaque {} et lui inflige {} points de dégâts, il lui reste {} PV".format(self.name, target.name,
+                                                                                                    damage, target.health))
+            var_escape = randint(0, self.dext)
+            if var_escape >= 1:
+                print("// {} esquive la contre-attaque !".format(self.name))
+            if var_escape == 0:
+                self.health -= target.attack
+                if self.item4 is None:
+                    print("Dégât absorbé, Resistance magique détruite")
+                    self.health += target.attack
+                    self.item4 = "Nothing"
+                print("<-- {} attaque {} et lui inflige {} points de dégâts, il lui reste {} PV".format(target.name,
+                                                                                                        self.name,
+                                                                                                        target.attack,
+                                                                                                        self.health))
+                if self.health <= 0:
+                    print(self.name, "est mort !")
+
+        if monster_1.dext < monster_1.base_dext and target == monster_1:
+            monster_1.dext += 1
+            print("La Dextérité du {} remonte à {}".format(monster_1.name, monster_1.dext))
+        if monster_2.dext < monster_2.base_dext and target == monster_2:
+            monster_2.dext += 1
+            print("La Dextérité du {} remonte à {}".format(monster_2.name, monster_2.dext))
+        if monster_3.dext < monster_3.base_dext and target == monster_3:
+            monster_3.dext += 1
+            print("La Dextérité du {} remonte à {}".format(monster_3.name, monster_3.dext))
+
+    def set_weapon(self, weapon):
+        self.weapon = weapon
+
+    def has_weapon(self):
+        if self.weapon is not None:
+            return self.weapon
+
+    def get_weapon(self):
+        return self.weapon
+
+
+class Monster(Entity):
+    def __init__(self, name, health, attack, dext, mana_point, loot, weakness, base_dext):
+        Entity.__init__(self, name, health, attack, dext, mana_point)
+        self.loot = loot
+        self.weakness = weakness
+        self.base_dext = base_dext
+        print("Loot : {}".format(loot))
+class Hero(Entity):
+    def __init__(self, name, health, attack, dext, mana_point):
+        Entity.__init__(self, name, health, attack, dext, mana_point)
+
+
+#### Main Console ######################################################################################################
+
+#### Set : Monsters, Heroes, and Items #################################################################################
+monster_1 = Monster("Gobelin", 8, 2, 1, 0, "Potion de Mana", "Shadow", 1)
+monster_2 = Monster("Gobelin Rapide", 8, 2, 2, 0, "Un Arc qui permet d'éviter les contre-attaques", "Ice", 2)
+monster_3 = Monster("Hob Gobelin", 16, 3, 1, 0, "Un Rubis valant 10 PO", "Fire", 1)
+monster_1.set_items("Potion de Mana", None, None, None, None)
+
+
+hero_1 = Hero("Eligane", 10, 1, 1, 5)
+weapon = Weapon("Epée", 1, "Fire", 10)
+hero_1.set_items("Potion de Soin", "Boule de Feu", "Bombe Fumigène", "Resistance Magique", None)
+print(" Items : {}, {}\n  Spells : {}, {}".format(hero_1.item1, hero_1.item3, hero_1.item2, hero_1.item4))
+hero_1.set_weapon(weapon)
+print("\nEligane vient d'acheter une", Weapon.get_name(weapon), "chez le forgeron, elle inflige", Weapon.get_damage_amount(weapon), "point de dégât",
+      "d'enchantement *", Weapon.get_enchantment(weapon),"*\nLa ville vient d'être attaquée par 3 Gobelins Elites venant"
+                                                        " quotidiennement semer la pagaille...")
+
+#### Set : Functions call_back to Classes ##############################################################################
+def attack_entity_1():
+    hero_1.attack_entity(monster_1)
+    set_var_label()
+    set_var_life_monster_1()
+def attack_entity_2():
+    hero_1.attack_entity(monster_2)
+    set_var_label()
+    set_var_life_monster_2()
+def attack_entity_3():
+    hero_1.attack_entity(monster_3)
+    set_var_label()
+    set_var_life_monster_3()
+
+def use_item1():
+    hero_1.use_item_and_spells("Potion de Soin")
+    set_var_label()
+def use_item2():
+    hero_1.use_item_and_spells("Boule de Feu")
+    set_var_life_monster_1()
+    set_var_life_monster_2()
+    set_var_life_monster_3()
+def use_item3():
+    hero_1.use_item_and_spells("Bombe Fumigène")
+def use_item4():
+    hero_1.use_item_and_spells("Resistance Magique")
+def use_item5():
+    hero_1.use_item_and_spells("Potion de Mana")
+
+#### Set : Graphic Interface ###########################################################################################
+# GET PRINTS #
+
+console_window = Tk()
+
+screen_x = console_window.winfo_screenwidth()
+screen_y = console_window.winfo_screenheight()
+window_x = 715
+window_y = 400
+posX = (screen_x // 2) - (window_x // 2)
+posY = (screen_y // 2) - (window_y // 2)
+geo = "{}x{}+{}+{}".format(window_x, window_y, posX, posY)
+
+console_window.geometry(geo)
+console_window.geometry("350x450")
+console_window.title("Console {}".format(hero_1.name))
+console_window.iconbitmap("logo_3.ico")
+console_window.config(bg='#0E005C')
+
+
+## Variables ###########################################################################################################
+var_label = IntVar()
+var_life_monster1 = IntVar()
+var_life_monster2 = IntVar()
+var_life_monster3 = IntVar()
+var_mana_point = IntVar()
+var_durability_point = IntVar()
+
+label = Label(console_window, textvariable=var_label, bg='#0E005C', fg='White')
+label2 = Label(console_window, text="{} : PV".format(hero_1.name), bg='#2D0A60', fg='White')
+label3_var_monster1 = Label(console_window, textvariable=var_life_monster1, bg='#0E005C', fg='White')
+label3 = Label(console_window, text="{} : PV".format(monster_1.name), bg='#057044', fg='White')
+label4_var_monster2 = Label(console_window, textvariable=var_life_monster2, bg='#0E005C', fg='White')
+label4 = Label(console_window, text="{} : PV".format(monster_2.name), bg='#057065', fg='White')
+label5_var_monster3 = Label(console_window, textvariable=var_life_monster3, bg='#0E005C', fg='White')
+label5 = Label(console_window, text="{} : PV".format(monster_3.name), bg='#C67A0C', fg='White')
+label6_var_hero1_mana_point = Label(console_window, textvariable=var_mana_point, bg='#0E005C', fg='White')
+label6 = Label(console_window, text="{} : MANA".format(hero_1.name), bg='#054970', fg='White')
+label7_var_hero1_durability_point = Label(console_window, textvariable=var_durability_point, bg='#0E005C', fg='White')
+label7 = Label(console_window, text="{} : Durabilité".format(weapon.name), bg='#054970', fg='White')
+space9 = Label(console_window, bg='#0E005C', text="-----------", fg='white')
+space10 = Label(console_window, bg='#0E005C', text="-----------", fg='white')
+
+#### CONSOLES VARIABLES ################################################################################################
+
+var_text_console = StringVar()
+
+def set_var_attack():
+    var_text_console.set("-----------------------Nouveau Tour---------------------------\n"
+                  "Votre arme perd 1 en durabilité")
+
+
+
+show_prints = Label(console_window, textvariable=var_text_console, fg='white', bg='#0E005C')
+
+show_prints.pack()
+
+########################################################################################################################
+
+def set_var_label():
+    var_label.set(hero_1.health)
+def set_var_life_monster_1():
+    var_life_monster1.set(monster_1.health)
+def set_var_life_monster_2():
+    var_life_monster2.set(monster_2.health)
+def set_var_life_monster_3():
+    var_life_monster3.set(monster_3.health)
+def set_var_mana_point_hero_1():
+    var_mana_point.set(hero_1.mana_point)
+set_var_mana_point_hero_1()
+def set_var_durability_point():
+    var_durability_point.set(weapon.durability)
+set_var_durability_point()
+
+var_label.set(hero_1.health)
+var_life_monster1.set(monster_1.health)
+var_life_monster2.set(monster_2.health)
+var_life_monster3.set(monster_3.health)
+
+########## HERO WINDOW #################################################################################################
+
+hero_window = Tk()
+
+
+screen_x = hero_window.winfo_screenwidth()
+screen_y = hero_window.winfo_screenheight()
+window_x = 1000
+window_y = 400
+posX = (screen_x // 2) - (window_x // 2)
+posY = (screen_y // 2) - (window_y // 2)
+geo = "{}x{}+{}+{}".format(window_x, window_y, posX, posY)
+hero_window.geometry(geo)
+hero_window.geometry("136x450")
+hero_window.title("HERO {}".format(hero_1.name))
+hero_window.iconbitmap("logo_3.ico")
+hero_window.config(bg='#3D1F1F')
+
+weapon = hero_1.get_weapon()
+
+
+title = Label(hero_window, font=("Helvetica", 13), bg ='black', text= "Attributs du Heros", fg='white')
+space1 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space2 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space3 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space4 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space5 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space6 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space7 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+space8 = Label(hero_window, bg='#3D1F1F', text="-----------", fg='#FFDC00')
+label_dext = Label(hero_window, text="Dextérité : |{}|".format(hero_1.dext), bg='#3D1F1F', fg='#109B47')
+label_attack = Label(hero_window, text="Attack : |{}|".format(hero_1.attack), bg='#3D1F1F', fg='#B01010')
+label_weapon = Label(hero_window, text="Damage de l'{} : |{}|".format(Weapon.get_name(weapon), Weapon.get_damage_amount(weapon)), bg='#3D1F1F', fg='#B04010')
+label_enchantement = Label(hero_window, text="Enchantement : |{}|".format(Weapon.get_enchantment(weapon)), bg='#3D1F1F', fg='#10439B')
+label_durability = Label(hero_window, text="Durabilité : |{}|".format(Weapon.get_durability(weapon)), bg='#3D1F1F', fg='#78490C')
+label_health = Label(hero_window, text="Point de Vie : |{}|".format(hero_1.health), bg='#3D1F1F', fg='#9616B8')
+label_mana_point = Label(hero_window, text="Point de Mana : |{}|".format(hero_1.mana_point), bg='#3D1F1F', fg='#166EB8')
+label_item = Label(hero_window, text="Items :\n\n|{}|\n|{}|\n\n Sorts :\n\n|{}|\n|{}|\n".format(hero_1.item1, hero_1.item3, hero_1.item2, hero_1.item4), bg='#3D1F1F', fg='#8D8D60')
+
+title.pack()
+space1.pack()
+label_dext.pack()
+space2.pack()
+label_attack.pack()
+space3.pack()
+label_weapon.pack()
+space4.pack()
+label_enchantement.pack()
+space5.pack()
+label_durability.pack()
+space6.pack()
+label_health.pack()
+space7.pack()
+label_mana_point.pack()
+space8.pack()
+label_item.pack()
+
+attack_window = Tk()
+screen_x = attack_window.winfo_screenwidth()
+screen_y = attack_window.winfo_screenheight()
+window_x = 0
+window_y = 400
+posX = (screen_x // 2) - (window_x // 2)
+posY = (screen_y // 2) - (window_y // 2)
+geo = "{}x{}+{}+{}".format(window_x, window_y, posX, posY)
+
+attack_window.geometry(geo)
+attack_window.geometry("170x450")
+attack_window.title("Player {}".format(hero_1.name))
+attack_window.iconbitmap("logo_3.ico")
+attack_window.config(bg='#0E005C')
+
+attack_entity_1 = Button(attack_window, width=30, bg='#057044', text="Attaquer le {}".format(monster_1.name), command=attack_entity_1)
+attack_entity_2 = Button(attack_window, width=30, bg='#057065', text="Attaquer le {}".format(monster_2.name), command=attack_entity_2)
+attack_entity_3 = Button(attack_window, width=30, bg='#054970', text="Attaquer le {}".format(monster_3.name), command=attack_entity_3)
+item1 = Button(attack_window, width=30, bg='#FA2323', text="Potion de Soin", command=use_item1)
+item2 = Button(attack_window, width=30, bg='#F7A900', text="Boule de Feu", command=use_item2)
+item3 = Button(attack_window, width=30, bg='#829CAB', text="Bombe Fumigène", command=use_item3)
+item4 = Button(attack_window, width=30, bg='#67458F', text="Resistance Magique", command=use_item4)
+item5 = Button(attack_window, width=30, bg='#054970', text="Potion de Mana", command=use_item5)
+frame1 = Frame(attack_window, bg='#0E005C')
+frame2 = Frame(attack_window, bg='#0E005C')
+title = Label(frame1, text="Vous êtes attaqué par des Gobelins !", font=("Courrier", 7), bg='#0C214D', fg='white')
+white = Label(frame2, font=("Courrier", 7), text= "Items and Spells :", bg='#0C214D', fg='white')
+space = Label(attack_window, bg='#0E005C')
+space2 = Label(attack_window, bg='#0E005C')
+
+### Pack ###############################################################################################################
+
+frame1.pack()
+title.pack(expand=YES)
+attack_entity_1.pack()
+attack_entity_2.pack()
+attack_entity_3.pack()
+frame2.pack()
+white.pack()
+item1.pack()
+item2.pack()
+item3.pack()
+item4.pack()
+space.pack()
+def packitem5():
+    item5.pack()
+
+space10.pack()
+label2.pack()
+label.pack()
+
+label6.pack()
+label6_var_hero1_mana_point.pack()
+label7.pack()
+label7_var_hero1_durability_point.pack()
+
+space9.pack()
+
+label3.pack()
+label3_var_monster1.pack()
+label4.pack()
+label4_var_monster2.pack()
+label5.pack()
+label5_var_monster3.pack()
+
+space2.pack()
+
+###### MAIN LOOP #######################################################################################################
+attack_window.mainloop()
+hero_window.mainloop()
+console_window.mainloop()
+
+
